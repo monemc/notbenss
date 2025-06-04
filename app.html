@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotFrens - Web3 Platform</title>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 215, 0, 0.15);
+            filter: blur(80px);
+            z-index: 0;
+        }
+
+        .bg-glow-1 {
+            top: 20%;
+            left: -100px;
+        }
+
+        .bg-glow-2 {
+            bottom: 10%;
+            right: -50px;
+        }
+
+        .api-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .api-status.online {
+            border-color: #55ff7f;
+            color: #55ff7f;
+        }
+
+        .api-status.offline {
+            border-color: #ff5555;
+            color: #ff5555;
+        }
+
+        .api-status.testing {
+            border-color: #FFD700;
+            color: #FFD700;
+        }
+
+        .wallet-connect-area {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .wallet-info {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 152, 234, 0.3);
+            box-shadow: 0 0 15px rgba(0, 152, 234, 0.2);
+            width: 100%;
+            text-align: center;
+            display: none;
+        }
+
+        .wallet-info.active {
+            display: block;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            font-size: 12px;
+            color: #0098ea;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+
+        .wallet-balance {
+            font-size: 16px;
+            color: #FFD700;
+            font-weight: 600;
+            margin: 8px 0;
+        }
+
+        .transaction-section {
+            width: 100%;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .transaction-section.active {
+            display: block;
+        }
+
+        .transaction-form {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(0, 152, 234, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+
+        .transaction-title {
+            color: #0098ea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #0098ea;
+            box-shadow: 0 0 0 2px rgba(0, 152, 234, 0.2);
+        }
+
+        .send-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #0098ea, #0066cc);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 152, 234, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .logo-container {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            position: relative;
+        }
+
+        .logo svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+        }
+
+        .logo-path {
+            stroke: #FFD700;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 3px #FFD700);
+        }
+
+        .logo-node {
+            fill: #FFD700;
+            filter: drop-shadow(0 0 5px #FFD700);
+        }
+
+        .token-display {
+            margin: 30px 0;
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .token-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .token-amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            margin-top: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .nav-button {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button:hover {
+            background: rgba(30, 30, 30, 0.9);
+            border-color: rgba(255, 215, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .nav-button::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #FFD700, transparent);
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+        }
+
+        .nav-button:hover::after {
+            transform: scaleX(1);
+        }
+
+        .button-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #FFD700;
+            position: relative;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .button-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .coming-soon::before {
+            content: "Coming Soon";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #FFD700;
+            color: #000;
+            font-size: 8px;
+            padding: 3px 6px;
+            border-radius: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .status-message {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .status-message.success {
+            background: rgba(39, 174, 96, 0.2);
+            color: #2ecc71;
+            border: 1px solid rgba(39, 174, 96, 0.3);
+        }
+
+        .status-message.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .status-message.loading {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pulse-animation {
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 90%;
+            width: 400px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            padding-bottom: 10px;
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            color: #FFD700;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            outline: none;
+        }
+
+        .close-modal:hover {
+            color: #FFD700;
+        }
+
+        .usdt-payment-content {
+            padding: 20px 0;
+        }
+
+        .payment-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .payment-amount {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .payment-amount .currency {
+            font-size: 24px;
+        }
+
+        .payment-amount .amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .payment-amount .description {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .payment-benefits {
+            background: rgba(20, 20, 20, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .payment-benefits h4 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .payment-benefits ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .payment-benefits li {
+            margin: 8px 0;
+            color: #fff;
+        }
+
+        .payment-methods h4 {
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: rgba(255, 215, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .payment-method.selected {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .method-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .method-info {
+            flex: 1;
+        }
+
+        .method-title {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .method-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .method-status {
+            background: #FFD700;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .payment-form {
+            background: rgba(20, 20, 20, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .recipient-info,
+        .amount-info,
+        .comment-info {
+            margin: 15px 0;
+        }
+
+        .recipient-info label,
+        .amount-info label,
+        .comment-info label {
+            display: block;
+            margin-bottom: 8px;
+            color: #FFD700;
+            font-weight: 500;
+        }
+
+        .address-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .address-input,
+        .comment-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .amount-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .amount-display {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            color: #FFD700;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .copy-btn {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            color: #FFD700;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+
+        .payment-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .payment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .payment-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .payment-status {
+            text-align: center;
+            padding: 30px;
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 15px;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .status-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .frens-screen {
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #000;
+            z-index: 20;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .screen-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            position: relative;
+        }
+
+        .screen-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            color: #FFD700;
+            font-weight: 700;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            position: absolute;
+            left: 0;
+        }
+
+        .back-icon {
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .back-button:hover {
+            color: #FFD700;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-box {
+            flex: 1;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .stats-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stats-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .referral-link-container {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .link-label {
+            font-size: 14px;
+            color: #FFD700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .link-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .referral-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .link-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .link-button {
+            flex: 1;
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 8px;
+            color: #FFD700;
+            font-size: 14px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .link-button:hover {
+            background: rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .premium-status {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .not-premium .status-text {
+            color: #ff5555;
+            font-weight: 500;
+        }
+
+        .premium .status-text {
+            color: #55ff7f;
+            font-weight: 500;
+        }
+
+        .premium-button {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 8px;
+            color: #FFD700;
+            font-size: 14px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .premium-button:hover {
+            background: rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .user-tree {
+            margin-bottom: 30px;
+        }
+
+        .user-profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #B8860B);
+            border: 2px solid rgba(255, 215, 0, 0.8);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+            overflow: hidden;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .user-name {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .direct-referrals {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .referral-card {
+            flex: 1;
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 80px;
+        }
+
+        .referral-name {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+
+        .referral-status {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .referral-status.added {
+            color: #55ff7f;
+        }
+
+        .referral-status.not-added {
+            color: #ff5555;
+        }
+
+        .levels-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+        }
+
+        .level-card {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            min-height: 70px;
+        }
+
+        .level-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .level-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            color: #FFD700;
+            font-weight: 600;
+        }
+
+        .level-progress {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .level-rewards {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .reward-amount {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FFD700;
+        }
+
+        .claim-button {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 8px;
+            color: #FFD700;
+            font-size: 14px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .claim-button:hover:not([disabled]) {
+            background: rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .claim-button[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .level-card.no-claim {
+            padding: 15px;
+        }
+
+        .tokens-earned {
+            font-size: 14px;
+            color: #FFD700;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        
+        .referral-info-box {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FFD700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .info-list {
+            list-style: none;
+        }
+        
+        .info-list li {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: baseline;
+        }
+        
+        .info-list li:before {
+            content: "•";
+            color: #FFD700;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .highlight {
+            color: #FFD700;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .form-input {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="api-status" id="apiStatus">API: Checking...</div>
+    
+    <div class="container" id="mainScreen">
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+        
+        <div class="wallet-connect-area">
+            <div id="ton-connect-ui"></div>
+        </div>
+        
+        <div class="wallet-info" id="walletInfo">
+            <div class="wallet-address" id="walletAddress">Not Connected</div>
+            <div class="wallet-balance" id="walletBalance">0 TON</div>
+        </div>
+        
+        <div class="transaction-section" id="transactionSection">
+            <div class="transaction-form">
+                <div class="transaction-title">💎 Send TON</div>
+                <div class="form-group">
+                    <label class="form-label">To Address:</label>
+                    <input type="text" class="form-input" id="toAddress" placeholder="EQD..." />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount (TON):</label>
+                    <input type="number" class="form-input" id="amount" step="0.001" min="0.001" placeholder="0.1" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Comment (optional):</label>
+                    <input type="text" class="form-input" id="comment" placeholder="Payment comment" />
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendTransaction()">Send TON</button>
+            </div>
+        </div>
+        
+        <div class="status-message" id="statusMessage"></div>
+        
+        <div class="logo-container">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path class="logo-path" d="M50 10 L10 80 L90 80 Z" />
+                    <path class="logo-path" d="M50 10 L50 80" />
+                    <path class="logo-path" d="M50 10 L10 80" />
+                    <path class="logo-path" d="M50 10 L90 80" />
+                    <circle class="logo-node" cx="50" cy="10" r="5" />
+                    <circle class="logo-node" cx="10" cy="80" r="5" />
+                    <circle class="logo-node" cx="90" cy="80" r="5" />
+                    <circle class="logo-node" cx="50" cy="80" r="5" />
+                </svg>
+            </div>
+        </div>
+        
+        <div class="token-display pulse-animation">
+            <div class="token-label">Your Notfrens Balance</div>
+            <div class="token-amount" id="tokenBalance">0 NOTF</div>
+        </div>
+        
+        <div class="button-container">
+            <div class="nav-button">
+                <div class="button-icon">🏆</div>
+                <div class="button-label">Rank</div>
+            </div>
+            
+            <div class="nav-button" id="frensButton">
+                <div class="button-icon">👥</div>
+                <div class="button-label">Frens</div>
+            </div>
+            
+            <div class="nav-button">
+                <div class="button-icon">✅</div>
+                <div class="button-label">Tasks</div>
+            </div>
+            
+            <div class="nav-button coming-soon">
+                <div class="button-icon">💱</div>
+                <div class="button-label">Trade (NFT)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="usdtPaymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">💰 Premium Upgrade - $11 USDT</h3>
+                <button class="close-modal" id="closeUsdtModal">×</button>
+            </div>
+            
+            <div class="usdt-payment-content">
+                <div class="payment-info">
+                    <div class="payment-amount">
+                        <span class="currency">💵</span>
+                        <span class="amount">11 USDT</span>
+                        <span class="description">Premium Access</span>
+                    </div>
+                    
+                    <div class="payment-benefits">
+                        <h4>Premium Benefits:</h4>
+                        <ul>
+                            <li>✅ Unlimited referrals</li>
+                            <li>✅ Level progression unlocked</li>
+                            <li>✅ Priority support</li>
+                            <li>✅ Advanced analytics</li>
+                            <li>✅ Higher rewards</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="payment-methods">
+                    <h4>Choose Payment Method:</h4>
+                    
+                    <div class="payment-method" onclick="selectPaymentMethod('direct')">
+                        <div class="method-icon">💎</div>
+                        <div class="method-info">
+                            <div class="method-title">Direct USDT Transfer</div>
+                            <div class="method-desc">Send 11 USDT to our address</div>
+                        </div>
+                        <div class="method-status">Recommended</div>
+                    </div>
+                    
+                    <div class="payment-method" onclick="selectPaymentMethod('comment')">
+                        <div class="method-icon">📝</div>
+                        <div class="method-info">
+                            <div class="method-title">TON + USDT Comment</div>
+                            <div class="method-desc">Send 0.1 TON with "11 USDT" comment</div>
+                        </div>
+                        <div class="method-status">Simple</div>
+                    </div>
+                </div>
+                
+                <div id="directPaymentForm" class="payment-form" style="display: none;">
+                    <div class="recipient-info">
+                        <label>📍 Recipient USDT Address:</label>
+                        <div class="address-container">
+                            <input type="text" id="usdtRecipientAddress" 
+                                   value="UQCpLxU30SVhlQ049kja71GohOM43YR3emTT3igMHsntmlkI" 
+                                   readonly class="address-input">
+                            <button onclick="copyUsdtAddress()" class="copy-btn">Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div class="amount-info">
+                        <label>💰 Amount:</label>
+                        <div class="amount-display">11 USDT</div>
+                    </div>
+                    
+                    <div class="comment-info">
+                        <label>💬 Payment Comment:</label>
+                        <input type="text" id="paymentComment" 
+                               value="NotFrens Premium - User ID: 123456789" 
+                               readonly class="comment-input">
+                    </div>
+                    
+                    <button onclick="initiateUSDTPayment()" class="payment-btn" id="usdtPayBtn">
+                        💎 Send 11 USDT Payment
+                    </button>
+                </div>
+                
+                <div id="commentPaymentForm" class="payment-form" style="display: none;">
+                    <div class="recipient-info">
+                        <label>📍 Recipient TON Address:</label>
+                        <div class="address-container">
+                            <input type="text" id="tonRecipientAddress" 
+                                   value="UQCpLxU30SVhlQ049kja71GohOM43YR3emTT3igMHsntmlkI" 
+                                   readonly class="address-input">
+                            <button onclick="copyTonAddress()" class="copy-btn">Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div class="amount-info">
+                        <label>💎 TON Amount:</label>
+                        <input type="number" id="tonAmount" value="0.1" step="0.01" min="0.01" class="amount-input">
+                    </div>
+                    
+                    <div class="comment-info">
+                        <label>💬 Payment Comment (REQUIRED):</label>
+                        <input type="text" id="tonPaymentComment" 
+                               value="11 USDT Premium Payment - User ID: 123456789" 
+                               class="comment-input">
+                    </div>
+                    
+                    <button onclick="initiateTONPayment()" class="payment-btn" id="tonPayBtn">
+                        💰 Send TON Payment
+                    </button>
+                </div>
+                
+                <div id="paymentStatus" class="payment-status" style="display: none;">
+                    <div class="status-icon">⏳</div>
+                    <div class="status-text">Processing payment...</div>
+                    <div class="status-desc">Please wait while we verify your transaction</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="frens-screen" id="frensScreen">
+        <div class="screen-header">
+            <button class="back-button" id="frensBackButton">
+                <span class="back-icon">&#10094;</span> Back
+            </button>
+            <h2 class="screen-title">Frens</h2>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stats-box">
+                <div class="stats-label">Total</div>
+                <div class="stats-value" id="totalEarned">$0</div>
+            </div>
+            <div class="stats-box">
+                <div class="stats-label">Withdrawn</div>
+                <div class="stats-value" id="withdrawn">$0</div>
+            </div>
+        </div>
+        
+        <div class="referral-link-container">
+            <div class="link-label">Referral Link</div>
+            <div class="link-actions">
+                <input type="text" class="referral-input" id="referralInput" value="Loading..." readonly>
+                <div class="link-buttons">
+                    <button class="link-button" id="copyButton">Copy</button>
+                    <button class="link-button" id="shareButton">Share</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="premium-status not-premium" id="premiumStatusDiv">
+            <span class="status-text" id="premiumStatusText">Premium ❌</span>
+            <button class="premium-button" id="premiumButton" onclick="showUSDTPayment()">Pay $11 USDT</button>
+        </div>
+        
+        <div class="user-tree">
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">👤</div>
+                <div class="user-name" id="userName">Loading...</div>
+                <div class="tokens-earned" id="tokensEarned">0 Tokens Earned from Referrals</div>
+            </div>
+            
+            <div class="direct-referrals" id="directReferrals">
+                <div class="referral-card">
+                    <div class="referral-name">Slot 1</div>
+                    <div class="referral-status not-added">Empty</div>
+                </div>
+                <div class="referral-card">
+                    <div class="referral-name">Slot 2</div>
+                    <div class="referral-status not-added">Empty</div>
+                </div>
+                <div class="referral-card">
+                    <div class="referral-name">Slot 3</div>
+                    <div class="referral-status not-added">Empty</div>
+                </div>
+            </div>
+            
+            <div class="referral-info-box">
+                <div class="info-title">💰 Referral Rewards 💰</div>
+                <ul class="info-list">
+                    <li><span class="highlight">100 NOTF tokens</span> for every direct referral</li>
+                    <li><span class="highlight">Premium required</span> for level progression</li>
+                    <li>Claim payments when levels are complete</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="levels-container" id="levelsContainer">
+            <div class="level-card">
+                <div class="level-info">
+                    <div class="level-name">Level 3</div>
+                    <div class="level-progress" id="level3Progress">0/9</div>
+                </div>
+                <div class="level-rewards">
+                    <div class="reward-amount">$30</div>
+                    <button class="claim-button" disabled id="claim3Button" onclick="claimReward(3)">Claim</button>
+                </div>
+            </div>
+            
+            <div class="level-card no-claim">
+                <div class="level-info">
+                    <div class="level-name">Level 4</div>
+                    <div class="level-progress" id="level4Progress">0/27</div>
+                </div>
+            </div>
+            
+            <div class="level-card">
+                <div class="level-info">
+                    <div class="level-name">Level 5</div>
+                    <div class="level-progress" id="level5Progress">0/81</div>
+                </div>
+                <div class="level-rewards">
+                    <div class="reward-amount">$300</div>
+                    <button class="claim-button" disabled id="claim5Button" onclick="claimReward(5)">Claim</button>
+                </div>
+            </div>
+            
+            <div class="level-card no-claim">
+                <div class="level-info">
+                    <div class="level-name">Level 6</div>
+                    <div class="level-progress" id="level6Progress">0/243</div>
+                </div>
+            </div>
+            
+            <div class="level-card">
+                <div class="level-info">
+                    <div class="level-name">Level 7</div>
+                    <div class="level-progress" id="level7Progress">0/729</div>
+                </div>
+                <div class="level-rewards">
+                    <div class="reward-amount">$1,800</div>
+                    <button class="claim-button" disabled id="claim7Button" onclick="claimReward(7)">Claim</button>
+                </div>
+            </div>
+            
+            <div class="level-card no-claim">
+                <div class="level-info">
+                    <div class="level-name">Level 8</div>
+                    <div class="level-progress" id="level8Progress">0/2187</div>
+                </div>
+            </div>
+            
+            <div class="level-card">
+                <div class="level-info">
+                    <div class="level-name">Level 9</div>
+                    <div class="level-progress" id="level9Progress">0/6561</div>
+                </div>
+                <div class="level-rewards">
+                    <div class="reward-amount">$20,000</div>
+                    <button class="claim-button" disabled id="claim9Button" onclick="claimReward(9)">Claim</button>
+                </div>
+            </div>
+            
+            <div class="level-card no-claim">
+                <div class="level-info">
+                    <div class="level-name">Level 10</div>
+                    <div class="level-progress" id="level10Progress">0/19683</div>
+                </div>
+            </div>
+            
+            <div class="level-card no-claim">
+                <div class="level-info">
+                    <div class="level-name">Level 11</div>
+                    <div class="level-progress" id="level11Progress">0/59049</div>
+                </div>
+            </div>
+            
+            <div class="level-card">
+                <div class="level-info">
+                    <div class="level-name">Level 12</div>
+                    <div class="level-progress" id="level12Progress">0/177147</div>
+                </div>
+                <div class="level-rewards">
+                    <div class="reward-amount">$222,000</div>
+                    <button class="claim-button" disabled id="claim12Button" onclick="claimReward(12)">Claim</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tonConnectUI;
+        let currentWallet = null;
+        let currentUser = null;
+        let selectedPaymentMethod = null;
+        
+        const API_BASE = window.location.origin + '/api';
+        const PAYMENT_CONFIG = {
+            usdtAddress: "UQCpLxU30SVhlQ049kja71GohOM43YR3emTT3igMHsntmlkI",
+            tonAddress: "UQCpLxU30SVhlQ049kja71GohOM43YR3emTT3igMHsntmlkI",
+            usdtAmount: 11,
+            tonAmount: 0.1
+        };
+
+        const elements = {
+            apiStatus: document.getElementById('apiStatus'),
+            walletInfo: document.getElementById('walletInfo'),
+            walletAddress: document.getElementById('walletAddress'),
+            walletBalance: document.getElementById('walletBalance'),
+            transactionSection: document.getElementById('transactionSection'),
+            statusMessage: document.getElementById('statusMessage'),
+            tokenBalance: document.getElementById('tokenBalance'),
+            mainScreen: document.getElementById('mainScreen'),
+            frensScreen: document.getElementById('frensScreen'),
+            frensButton: document.getElementById('frensButton'),
+            frensBackButton: document.getElementById('frensBackButton'),
+            copyButton: document.getElementById('copyButton'),
+            shareButton: document.getElementById('shareButton'),
+            userName: document.getElementById('userName'),
+            tokensEarned: document.getElementById('tokensEarned'),
+            referralInput: document.getElementById('referralInput'),
+            directReferrals: document.getElementById('directReferrals'),
+            usdtPaymentModal: document.getElementById('usdtPaymentModal'),
+            closeUsdtModal: document.getElementById('closeUsdtModal'),
+            premiumStatusDiv: document.getElementById('premiumStatusDiv'),
+            premiumStatusText: document.getElementById('premiumStatusText'),
+            premiumButton: document.getElementById('premiumButton')
+        };
+
+        async function makeAPIRequest(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                ...options
+            };
+
+            try {
+                const response = await fetch(url, defaultOptions);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                return { success: true, data };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function checkAPIHealth() {
+            elements.apiStatus.textContent = 'API: Testing...';
+            elements.apiStatus.className = 'api-status testing';
+            
+            const result = await makeAPIRequest('/health');
+            
+            if (result.success) {
+                elements.apiStatus.textContent = `API: Online (${result.data.users} users)`;
+                elements.apiStatus.className = 'api-status online';
+                return true;
+            } else {
+                elements.apiStatus.textContent = 'API: Offline';
+                elements.apiStatus.className = 'api-status offline';
+                return false;
+            }
+        }
+
+        async function initTonConnect() {
+            try {
+                tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                    manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+                    buttonRootId: 'ton-connect-ui'
+                });
+
+                tonConnectUI.onStatusChange((wallet) => {
+                    if (wallet) {
+                        currentWallet = wallet;
+                        handleWalletConnected(wallet);
+                    } else {
+                        currentWallet = null;
+                        handleWalletDisconnected();
+                    }
+                });
+
+                if (tonConnectUI.wallet) {
+                    currentWallet = tonConnectUI.wallet;
+                    handleWalletConnected(tonConnectUI.wallet);
+                }
+            } catch (error) {
+                showStatus('TON Connect failed to load', 'error');
+            }
+        }
+
+        async function handleWalletConnected(wallet) {
+            const shortAddress = `${wallet.account.address.slice(0, 8)}...${wallet.account.address.slice(-8)}`;
+            elements.walletAddress.textContent = shortAddress;
+            elements.walletInfo.classList.add('active');
+            elements.transactionSection.classList.add('active');
+            
+            await updateWalletBalance(wallet.account.address);
+            showStatus('Wallet connected successfully!', 'success');
+            await notifyBackendWalletConnection(wallet.account.address);
+        }
+
+        function handleWalletDisconnected() {
+            elements.walletAddress.textContent = 'Not Connected';
+            elements.walletBalance.textContent = '0 TON';
+            elements.walletInfo.classList.remove('active');
+            elements.transactionSection.classList.remove('active');
+            showStatus('Wallet disconnected', 'error');
+        }
+
+        async function updateWalletBalance(address) {
+            try {
+                const result = await makeAPIRequest('/ton/balance', {
+                    method: 'POST',
+                    body: JSON.stringify({ address })
+                });
+
+                if (result.success) {
+                    elements.walletBalance.textContent = `${result.data.balance} TON`;
+                } else {
+                    elements.walletBalance.textContent = '0 TON';
+                }
+            } catch (error) {
+                elements.walletBalance.textContent = '0 TON';
+            }
+        }
+
+        async function notifyBackendWalletConnection(address) {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('user') || '123456789';
+                
+                await makeAPIRequest('/ton/connect', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        telegramId: parseInt(userId),
+                        walletAddress: address
+                    })
+                });
+            } catch (error) {
+                console.error('Backend notification error:', error);
+            }
+        }
+
+        async function sendTransaction() {
+            if (!currentWallet) {
+                showStatus('Please connect your wallet first', 'error');
+                return;
+            }
+
+            const toAddress = document.getElementById('toAddress').value.trim();
+            const amount = document.getElementById('amount').value.trim();
+            const comment = document.getElementById('comment').value.trim();
+
+            if (!toAddress) {
+                showStatus('Please enter recipient address', 'error');
+                return;
+            }
+
+            if (!amount || parseFloat(amount) <= 0) {
+                showStatus('Please enter valid amount', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Preparing transaction...', 'loading');
+                
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Sending...';
+
+                const transaction = {
+                    validUntil: Math.floor(Date.now() / 1000) + 600,
+                    messages: [{
+                        address: toAddress,
+                        amount: (parseFloat(amount) * 1000000000).toString(),
+                        payload: comment ? btoa(comment) : undefined
+                    }]
+                };
+
+                const result = await tonConnectUI.sendTransaction(transaction);
+                showStatus('Transaction sent successfully!', 'success');
+
+                await notifyBackendTransaction({
+                    hash: result.boc,
+                    from: currentWallet.account.address,
+                    to: toAddress,
+                    amount: amount,
+                    comment: comment
+                });
+
+                document.getElementById('toAddress').value = '';
+                document.getElementById('amount').value = '';
+                document.getElementById('comment').value = '';
+
+                setTimeout(() => {
+                    updateWalletBalance(currentWallet.account.address);
+                }, 3000);
+
+            } catch (error) {
+                showStatus(`Transaction failed: ${error.message}`, 'error');
+            } finally {
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send TON';
+            }
+        }
+
+        async function notifyBackendTransaction(txData) {
+            try {
+                await makeAPIRequest('/ton/transaction', {
+                    method: 'POST',
+                    body: JSON.stringify(txData)
+                });
+            } catch (error) {
+                console.error('Transaction notification error:', error);
+            }
+        }
+
+        function showUSDTPayment() {
+            const modal = elements.usdtPaymentModal;
+            modal.style.display = 'flex';
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user') || '123456789';
+            
+            document.getElementById('paymentComment').value = `NotFrens Premium - User ID: ${userId}`;
+            document.getElementById('tonPaymentComment').value = `11 USDT Premium Payment - User ID: ${userId}`;
+        }
+
+        elements.closeUsdtModal.addEventListener('click', function() {
+            elements.usdtPaymentModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target === elements.usdtPaymentModal) {
+                elements.usdtPaymentModal.style.display = 'none';
+            }
+        });
+
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            
+            document.getElementById('directPaymentForm').style.display = method === 'direct' ? 'block' : 'none';
+            document.getElementById('commentPaymentForm').style.display = method === 'comment' ? 'block' : 'none';
+        }
+
+        function copyUsdtAddress() {
+            const address = document.getElementById('usdtRecipientAddress');
+            address.select();
+            address.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                const btn = event.currentTarget;
+                btn.textContent = 'Copied!';
+                btn.style.background = 'rgba(46, 204, 113, 0.3)';
+                
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = 'rgba(255, 215, 0, 0.2)';
+                }, 2000);
+            } catch (err) {
+                navigator.clipboard.writeText(address.value);
+            }
+        }
+
+        function copyTonAddress() {
+            const address = document.getElementById('tonRecipientAddress');
+            address.select();
+            address.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                const btn = event.currentTarget;
+                btn.textContent = 'Copied!';
+                btn.style.background = 'rgba(46, 204, 113, 0.3)';
+                
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = 'rgba(255, 215, 0, 0.2)';
+                }, 2000);
+            } catch (err) {
+                navigator.clipboard.writeText(address.value);
+            }
+        }
+
+        async function initiateUSDTPayment() {
+            if (!currentWallet) {
+                showStatus('Please connect your TON wallet first', 'error');
+                return;
+            }
+            
+            try {
+                const payBtn = document.getElementById('usdtPayBtn');
+                payBtn.disabled = true;
+                payBtn.textContent = 'Processing...';
+                
+                showPaymentStatus('processing');
+                
+                const comment = document.getElementById('paymentComment').value;
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('user') || '123456789';
+                
+                const result = await makeAPIRequest('/payment/usdt', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        telegramId: parseInt(userId),
+                        type: 'direct_usdt',
+                        hash: null,
+                        from: currentWallet.account.address,
+                        amount: PAYMENT_CONFIG.usdtAmount,
+                        comment: comment,
+                        usdtEquivalent: PAYMENT_CONFIG.usdtAmount
+                    })
+                });
+                
+                if (result.success) {
+                    showPaymentStatus('instruction');
+                    
+                    // Auto-verify payment after 10 seconds for demo
+                    setTimeout(() => {
+                        showPaymentStatus('success');
+                        updatePremiumStatus(true);
+                        
+                        setTimeout(() => {
+                            elements.usdtPaymentModal.style.display = 'none';
+                            hidePaymentStatus();
+                        }, 3000);
+                    }, 10000);
+                    
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                showStatus('USDT payment failed: ' + error.message, 'error');
+                showPaymentStatus('error');
+                
+                setTimeout(() => {
+                    hidePaymentStatus();
+                }, 3000);
+            } finally {
+                const payBtn = document.getElementById('usdtPayBtn');
+                payBtn.disabled = false;
+                payBtn.textContent = '💎 Send 11 USDT Payment';
+            }
+        }
+
+        async function initiateTONPayment() {
+            if (!currentWallet) {
+                showStatus('Please connect your TON wallet first', 'error');
+                return;
+            }
+            
+            try {
+                const payBtn = document.getElementById('tonPayBtn');
+                payBtn.disabled = true;
+                payBtn.textContent = 'Sending...';
+                
+                showPaymentStatus('processing');
+                
+                const amount = document.getElementById('tonAmount').value;
+                const comment = document.getElementById('tonPaymentComment').value;
+                
+                const transaction = {
+                    validUntil: Math.floor(Date.now() / 1000) + 600,
+                    messages: [{
+                        address: PAYMENT_CONFIG.tonAddress,
+                        amount: (parseFloat(amount) * 1000000000).toString(),
+                        payload: btoa(comment)
+                    }]
+                };
+                
+                const result = await tonConnectUI.sendTransaction(transaction);
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('user') || '123456789';
+                
+                await makeAPIRequest('/payment/usdt', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        telegramId: parseInt(userId),
+                        type: 'ton_comment',
+                        hash: result.boc,
+                        from: currentWallet.account.address,
+                        amount: amount,
+                        comment: comment,
+                        usdtEquivalent: PAYMENT_CONFIG.usdtAmount
+                    })
+                });
+                
+                showPaymentStatus('success');
+                updatePremiumStatus(true);
+                
+                setTimeout(() => {
+                    elements.usdtPaymentModal.style.display = 'none';
+                    hidePaymentStatus();
+                }, 3000);
+                
+            } catch (error) {
+                showStatus('Payment failed: ' + error.message, 'error');
+                showPaymentStatus('error');
+                
+                setTimeout(() => {
+                    hidePaymentStatus();
+                }, 3000);
+            } finally {
+                const payBtn = document.getElementById('tonPayBtn');
+                payBtn.disabled = false;
+                payBtn.textContent = '💰 Send TON Payment';
+            }
+        }
+
+        function showPaymentStatus(status) {
+            const statusEl = document.getElementById('paymentStatus');
+            const iconEl = statusEl.querySelector('.status-icon');
+            const textEl = statusEl.querySelector('.status-text');
+            const descEl = statusEl.querySelector('.status-desc');
+            
+            statusEl.style.display = 'block';
+            
+            switch(status) {
+                case 'processing':
+                    iconEl.textContent = '⏳';
+                    textEl.textContent = 'Processing payment...';
+                    descEl.textContent = 'Please wait while we prepare your transaction';
+                    break;
+                    
+                case 'instruction':
+                    iconEl.textContent = '📋';
+                    textEl.textContent = 'Payment Instructions';
+                    descEl.innerHTML = `
+                        1. Open your USDT wallet<br>
+                        2. Send exactly ${PAYMENT_CONFIG.usdtAmount} USDT to the address above<br>
+                        3. Include the comment for verification<br>
+                        4. Premium will activate automatically in 10 seconds (demo)
+                    `;
+                    break;
+                    
+                case 'success':
+                    iconEl.textContent = '✅';
+                    textEl.textContent = 'Payment Successful!';
+                    descEl.textContent = 'Your premium has been activated successfully!';
+                    break;
+                    
+                case 'error':
+                    iconEl.textContent = '❌';
+                    textEl.textContent = 'Payment Failed';
+                    descEl.textContent = 'Please try again or contact support';
+                    break;
+            }
+        }
+
+        function hidePaymentStatus() {
+            document.getElementById('paymentStatus').style.display = 'none';
+        }
+
+        function updatePremiumStatus(isPremium) {
+            if (isPremium) {
+                elements.premiumStatusDiv.className = 'premium-status premium';
+                elements.premiumStatusText.textContent = 'Premium ✅';
+                elements.premiumButton.style.display = 'none';
+                
+                if (currentUser) {
+                    currentUser.isPremium = true;
+                }
+                
+                showStatus('🎉 Premium activated! Level progression unlocked!', 'success');
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusEl = elements.statusMessage;
+            statusEl.className = `status-message ${type}`;
+            
+            if (type === 'loading') {
+                statusEl.innerHTML = `<span class="loading-spinner"></span>${message}`;
+            } else {
+                statusEl.textContent = message;
+            }
+            
+            statusEl.style.display = 'block';
+
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('user') || '123456789';
+                
+                const result = await makeAPIRequest(`/telegram-user/${userId}`);
+                
+                if (result.success) {
+                    currentUser = result.data.user;
+                    updateUserInterface(currentUser);
+                    return true;
+                } else {
+                    loadDemoData();
+                    return false;
+                }
+            } catch (error) {
+                loadDemoData();
+                return false;
+            }
+        }
+
+        function loadDemoData() {
+            currentUser = {
+                telegramId: 123456789,
+                username: 'DemoUser',
+                totalDirectReferrals: 2,
+                referralLink: 'https://t.me/not_frens_bot?start=123456789',
+                isPremium: false,
+                levels: {
+                    1: { current: 2, required: 1, completed: true, reward: 0 },
+                    2: { current: 2, required: 3, completed: false, reward: 0 },
+                    3: { current: 2, required: 9, completed: false, reward: 30 },
+                    4: { current: 2, required: 27, completed: false, reward: 0 },
+                    5: { current: 2, required: 81, completed: false, reward: 300 },
+                    6: { current: 2, required: 243, completed: false, reward: 0 },
+                    7: { current: 2, required: 729, completed: false, reward: 1800 },
+                    8: { current: 2, required: 2187, completed: false, reward: 0 },
+                    9: { current: 2, required: 6561, completed: false, reward: 20000 },
+                    10: { current: 2, required: 19683, completed: false, reward: 0 },
+                    11: { current: 2, required: 59049, completed: false, reward: 0 },
+                    12: { current: 2, required: 177147, completed: false, reward: 222000 }
+                },
+                directReferrals: [
+                    { username: 'Friend1', telegramId: 987654321 },
+                    { username: 'Friend2', telegramId: 555666777 }
+                ]
+            };
+            
+            updateUserInterface(currentUser);
+        }
+
+        function updateUserInterface(user) {
+            if (!user) return;
+            
+            const totalTokens = user.totalDirectReferrals * 100;
+            elements.tokenBalance.textContent = `${totalTokens.toLocaleString()} NOTF`;
+            
+            elements.userName.textContent = `@${user.username}`;
+            elements.tokensEarned.textContent = `${totalTokens} Tokens Earned from Referrals`;
+            elements.referralInput.value = user.referralLink || `https://t.me/not_frens_bot?start=${user.telegramId}`;
+            
+            updatePremiumStatus(user.isPremium);
+            updateDirectReferrals(user.directReferrals || []);
+            
+            if (user.levels) {
+                updateLevels(user.levels);
+            }
+        }
+
+        function updateDirectReferrals(referrals) {
+            elements.directReferrals.innerHTML = '';
+            
+            for (let i = 0; i < 3; i++) {
+                const referral = referrals[i];
+                const card = document.createElement('div');
+                card.className = 'referral-card';
+                
+                if (referral) {
+                    card.innerHTML = `
+                        <div class="referral-name">@${referral.username}</div>
+                        <div class="referral-status added">Added (+100 tokens)</div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="referral-name">Slot ${i + 1}</div>
+                        <div class="referral-status not-added">Empty</div>
+                    `;
+                }
+                
+                elements.directReferrals.appendChild(card);
+            }
+        }
+
+        function updateLevels(levels) {
+            Object.keys(levels).forEach(levelNum => {
+                const level = levels[levelNum];
+                const progressElement = document.getElementById(`level${levelNum}Progress`);
+                const claimButton = document.getElementById(`claim${levelNum}Button`);
+                
+                if (progressElement) {
+                    progressElement.textContent = `${level.current}/${level.required}`;
+                    
+                    // Only allow level progression if premium
+                    if (level.completed && currentUser.isPremium) {
+                        progressElement.style.color = '#55ff7f';
+                        
+                        if (claimButton && level.reward > 0) {
+                            claimButton.disabled = false;
+                            claimButton.style.opacity = '1';
+                            claimButton.style.background = 'rgba(255, 215, 0, 0.3)';
+                        }
+                    } else if (level.completed && !currentUser.isPremium) {
+                        progressElement.style.color = '#ff9500';
+                        
+                        if (claimButton && level.reward > 0) {
+                            claimButton.textContent = 'Premium Required';
+                            claimButton.disabled = true;
+                            claimButton.style.opacity = '0.5';
+                        }
+                    }
+                }
+            });
+        }
+
+        async function claimReward(level) {
+            if (!currentUser) {
+                showStatus('Please load user data first!', 'error');
+                return;
+            }
+
+            if (!currentUser.isPremium) {
+                showStatus('Premium required for claiming rewards!', 'error');
+                showUSDTPayment();
+                return;
+            }
+            
+            const button = document.getElementById(`claim${level}Button`);
+            const originalText = button.textContent;
+            
+            button.textContent = 'Claiming...';
+            button.disabled = true;
+
+            const result = await makeAPIRequest('/telegram-claim', {
+                method: 'POST',
+                body: JSON.stringify({
+                    telegramId: currentUser.telegramId,
+                    level: level
+                })
+            });
+
+            if (result.success) {
+                const claimData = result.data.claimRequest;
+                showStatus(`✅ Claim submitted! Level ${claimData.level}: ${claimData.amount.toLocaleString()}`, 'success');
+                button.textContent = 'Claimed ✓';
+                button.style.background = 'rgba(46, 204, 113, 0.3)';
+                button.style.borderColor = 'rgba(46, 204, 113, 0.6)';
+            } else {
+                showStatus(`❌ Claim failed: ${result.error}`, 'error');
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        function setupEventListeners() {
+            elements.frensButton?.addEventListener('click', function() {
+                elements.mainScreen.style.display = 'none';
+                elements.frensScreen.style.display = 'flex';
+            });
+            
+            elements.frensBackButton?.addEventListener('click', function() {
+                elements.frensScreen.style.display = 'none';
+                elements.mainScreen.style.display = 'flex';
+            });
+            
+            elements.copyButton?.addEventListener('click', function() {
+                const referralInput = elements.referralInput;
+                referralInput.select();
+                referralInput.setSelectionRange(0, 99999);
+                
+                try {
+                    document.execCommand('copy');
+                    this.textContent = 'Copied!';
+                    this.style.background = 'rgba(46, 204, 113, 0.3)';
+                    
+                    setTimeout(() => {
+                        this.textContent = 'Copy';
+                        this.style.background = 'rgba(255, 215, 0, 0.2)';
+                    }, 2000);
+                } catch (err) {
+                    navigator.clipboard.writeText(referralInput.value);
+                }
+            });
+            
+            elements.shareButton?.addEventListener('click', function() {
+                const referralLink = elements.referralInput.value;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Join NotFrens',
+                        text: 'Check out this awesome crypto project! Use my referral link:',
+                        url: referralLink
+                    });
+                } else {
+                    navigator.clipboard.writeText(referralLink);
+                    this.textContent = 'Copied!';
+                    this.style.background = 'rgba(46, 204, 113, 0.3)';
+                    
+                    setTimeout(() => {
+                        this.textContent = 'Share';
+                        this.style.background = 'rgba(255, 215, 0, 0.2)';
+                    }, 2000);
+                }
+            });
+        }
+
+        async function initializeApp() {
+            setupEventListeners();
+            await initTonConnect();
+            
+            const apiHealthy = await checkAPIHealth();
+            
+            if (apiHealthy) {
+                setTimeout(() => {
+                    loadUserData();
+                }, 1000);
+            } else {
+                setTimeout(() => {
+                    loadDemoData();
+                }, 2000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        window.sendTransaction = sendTransaction;
+        window.claimReward = claimReward;
+        window.loadUserData = loadUserData;
+        window.checkAPIHealth = checkAPIHealth;
+        window.showUSDTPayment = showUSDTPayment;
+        window.selectPaymentMethod = selectPaymentMethod;
+        window.copyUsdtAddress = copyUsdtAddress;
+        window.copyTonAddress = copyTonAddress;
+        window.initiateUSDTPayment = initiateUSDTPayment;
+        window.initiateTONPayment = initiateTONPayment;
+    </script>
+</body>
+</html>
