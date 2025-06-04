@@ -1,0 +1,40 @@
+{
+  "name": "notfrens-miniapp-ton",
+  "version": "3.1.0",
+  "description": "NotFrens Complete Web3 Platform with TON Wallet & USDT Payments - Production Ready",
+  "main": "server.js",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "vercel-build": "echo 'Build complete - Production ready'"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5", 
+    "dotenv": "^16.3.1",
+    "node-telegram-bot-api": "^0.63.0",
+    "axios": "^1.6.0"
+  },
+  "keywords": [
+    "telegram",
+    "miniapp",
+    "bot",
+    "ton",
+    "usdt",
+    "web3",
+    "crypto",
+    "referral",
+    "payment",
+    "vercel"
+  ],
+  "author": "NotFrens Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/notfrens-miniapp"
+  },
+  "homepage": "https://notfrens.app"
+}
